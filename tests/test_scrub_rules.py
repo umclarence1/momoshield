@@ -38,3 +38,21 @@ def test_rules_flag_mistaken_transfer_scam():
 def test_rules_quiet_on_genuine_alert():
     score, _ = rules.check(scrub("Payment received for GHS 120.00 from AKUA DARKO Current Balance: GHS 340.55. Transaction ID: 51234098765."))
     assert score < rules.THRESHOLD
+
+
+def test_spelling_flags_scam_typos_and_grammar():
+    import spelling
+    t = scrub("You has recieved GHS 500 by mistake, send it back to 0244123456")
+    assert "recieved" in spelling.find_typos(t)
+    assert spelling.find_grammar(t)
+    assert "spelling" in {h.name for h in rules.check(t)[1]}
+    assert spelling.find_grammar("Dear costumer your account is blocked")
+
+
+def test_spelling_ignores_sms_shorthand_slang_and_alerts():
+    import spelling
+    for t in ["Abeg buy me pure water on your way chale",
+              "pls send me 50 for transport, ill pay u back friday",
+              "Payment received for GHS 120.00 from AKUA DARKO Current Balance: GHS 340.55. Transaction ID: 51234098765."]:
+        c = scrub(t)
+        assert not spelling.find_typos(c) and not spelling.find_grammar(c), t

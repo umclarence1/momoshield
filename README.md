@@ -1,7 +1,17 @@
 # MoMo Scam SMS Detector
 
 Flags Mobile Money scam SMS (fake "sent by mistake" alerts, blocked-account threats, fake promos,
-PIN/OTP theft), explains why, and tells the user what to do next.
+PIN/OTP theft, misspelled "official" messages), explains why, and tells the user what to do next.
+
+## Start the website
+
+```bash
+.venv/Scripts/python run_site.py        # opens http://localhost:8765
+```
+
+The page is served by a local FastAPI server (`src/api.py`), and the Python model scores each
+message on your computer. API: `POST /api/predict {"text": "..."}`. Pass another port as an
+argument (`python run_site.py 9000`) if 8765 is taken.
 
 ## Research question
 
@@ -17,7 +27,7 @@ No public dataset of Ghanaian MoMo scam SMS exists. So the question is:
 | UCI SMS Spam | `ucirvine/sms_spam` (Hugging Face) | train / in-domain test |
 | Mendeley SMS Phishing (CC BY 4.0) | doi:10.17632/f45bkkt8pr.1 | train / in-domain test |
 | Synthetic Ghana | `src/synth_ghana.py` | **training only** |
-| MOZ-Smishing (real Mozambican MoMo SMS) | `MOZNLP/MOZ-Smishing`, machine-translated pt→en | **test only** |
+| MOZ-Smishing (real Mozambican MoMo SMS) | `MOZNLP/MOZ-Smishing`, machine-translated pt→en | **test only** (dev / test halves) |
 | Ghana challenge set | `src/ghana_challenge.py`, hand-written, 40 msgs | **test only**, stress test |
 
 Not used: `electricsheepafrica/africa-smishing-sms-phishing`. Every row is synthetic and the fields
@@ -31,7 +41,25 @@ Data rules:
 - Synthetic and constructed data never go into a test set that is reported as real.
 - Label: spam + smishing = 1, ham/legitimate = 0.
 
-## Run
+## Spelling and grammar
+
+`src/spelling.py` finds typos (an unknown word one edit from a real word: "recieved", "acount"),
+grammar slips ("You has received", "have been credit") and wrong-word errors ("Dear costumer").
+SMS shorthand and Ghanaian words ("pls", "u", "abeg", "chale", common names) are not counted.
+
+It is used twice:
+- as a **red-flag rule** (weight 1.0): it always shows as a reason, and with any other red flag it
+  pushes a message over the threshold;
+- as five **model features** (`TfidfLR(use_spelling=True)`).
+
+What the data says (`reports/spelling_by_class.csv`): in the English data, scams and genuine
+messages trip the spelling check at about the same rate (24% vs 25%), because everyday SMS is
+informal. In MOZ, machine translation fixes the scammers' spelling, so the feature cannot be fairly
+tested there. The learned weights (`reports/spelling_weights.json`) push *a* typo or grammar slip
+towards "scam" but *heavy* typo density towards "genuine" (SMS shorthand). Net effect on MOZ test:
+PR-AUC 0.46 → 0.50 with the same recall. A real Ghanaian test set is needed to measure it properly.
+
+## Rebuild everything
 
 ```bash
 python -m venv .venv && .venv/Scripts/pip install -r requirements.txt
@@ -41,34 +69,25 @@ python src/translate_moz.py          # MOZ-Smishing pt -> en (CPU, ~10 min)
 python src/synth_ghana.py
 python src/ghana_challenge.py
 python src/prepare_data.py
-python src/train_eval.py             # results -> reports/
-streamlit run app.py                 # demo
-uvicorn api:app --app-dir src        # API: POST /predict {"text": "..."}
-python src/export_web.py             # model -> web/model.json + parity fixture
-node web/parity_test.js              # JS port must match Python exactly
-python src/build_site.py             # static site -> web/dist/ (index.html + model.json)
+python src/train_eval.py             # baselines -> reports/preds, models/
+python src/train_transformer.py --model distilbert-base-uncased --tag distilbert
+python src/train_transformer.py --model distilbert-base-multilingual-cased --tag mdistilbert
+python src/summarize.py              # -> reports/results.md (with 95% CIs)
 pytest tests
+streamlit run app.py                 # alternative demo UI
 ```
 
-## Website
+## Results
 
-`web/` is a static site that runs the whole detector in the browser: scrubbing, rules and the
-TF-IDF + LR model ported to JavaScript (`web/detector.js`). Nothing is uploaded. The parity test
-checks the port against Python on 1,579 test messages: identical scrubbing and rule scores,
-max probability difference 3e-7. Host `web/dist/` on any static host (GitHub Pages, Netlify).
+Full table with confidence intervals: `reports/results.md`. Write-up: `reports/REPORT.md`.
 
-## Baseline results (v2)
-
-TF-IDF + logistic regression, threshold 0.5. Full table: `reports/baseline_results.csv`.
-
-| Test set | Train data | Recall | Precision | False-positive rate |
-|---|---|---|---|---|
-| English held-out | real | 0.95 | 0.96 | 0.008 |
-| English held-out | real + synthetic Ghana | 0.95 | 0.99 | 0.003 |
-| **MOZ real MoMo (test half)** | real | 0.71 | 0.37 | 0.39 |
-| **MOZ real MoMo (test half)** | real + synthetic Ghana | **0.93** | 0.50 | 0.29 |
-| Ghana challenge (40, constructed) | real + synthetic Ghana | 0.60 | 0.80 | 0.15 |
-| any | rules only | ≤ 0.20 | — | — |
+| Test set | Model | Recall | False-positive rate |
+|---|---|---|---|
+| English held-out | TF-IDF LR, real + synth + spelling | 0.96 | 0.005 |
+| **MOZ real MoMo (test half)** | TF-IDF LR, real only | 0.71 | 0.39 |
+| **MOZ real MoMo (test half)** | TF-IDF LR, real + synth | 0.93 | 0.29 |
+| **MOZ real MoMo (test half)** | TF-IDF LR, real + synth + spelling | 0.93 | 0.28 |
+| Ghana challenge (40, constructed) | TF-IDF LR, real + synth + spelling | 0.60 | 0.15 |
 
 What this shows:
 - Near-perfect scores on English data say little. On real mobile-money SMS from another country,
@@ -77,7 +96,7 @@ What this shows:
 - The remaining false alarms are mostly **genuine transaction alerts**. A forged cash-in alert
   has the same text as a real one; only the sender differs. Text alone cannot separate them,
   so a deployable tool needs the sender ID.
-- The rules are a weak classifier (recall ≤ 0.20) but an accurate source of "reasons for concern."
+- The rules are a weak classifier but an accurate source of "reasons for concern."
 
 **Disclosure:** the "send it to my other number" synthetic template was added after looking at
 errors on the full MOZ set (v1). After that, MOZ was split by campaign group into dev (for error

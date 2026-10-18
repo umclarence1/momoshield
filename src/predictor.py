@@ -7,7 +7,7 @@ import rules
 from scrub import scrub
 from text_model import TfidfLR  # noqa: F401  (needed to unpickle the model)
 
-MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "tfidf_lr_real_synth.joblib"
+MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "tfidf_lr_spelling.joblib"
 
 ADVICE = {
     "mistaken_transfer": "Check your real balance and history through the official MoMo menu (*170# on MTN) or the official app. A genuine wrong transfer is reversed by the network, never by you sending money.",
@@ -19,6 +19,7 @@ ADVICE = {
     "prize_reward": "Genuine promotions never ask you to pay a fee or share a PIN to collect a prize.",
     "fee_to_receive": "Paying a fee to receive money is a classic scam pattern.",
     "link": "Do not open links in unexpected SMS messages.",
+    "spelling": "Poor spelling is a warning sign in a message about money. Genuine provider messages are carefully written.",
 }
 # Placeholder tokens as the word vectoriser sees them (it strips the angle brackets).
 PLACEHOLDER_WORDS = {"phone", "amount", "num", "txid", "url", "email", "name", "date", "time"}

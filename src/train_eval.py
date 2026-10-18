@@ -33,18 +33,36 @@ def main():
         save_preds("rules", "-", tname, t, rules.predict_score(t.text.tolist()), rules.THRESHOLD)
 
     models = {}
-    for variant, tr in [("real", train), ("real+synth", pd.concat([train, synth]))]:
-        m = TfidfLR().fit(tr.text.tolist(), tr.label.values)
+    both = pd.concat([train, synth])
+    for variant, tr, use_spelling in [("real", train, False), ("real+synth", both, False),
+                                      ("real+synth+spelling", both, True)]:
+        m = TfidfLR(use_spelling=use_spelling).fit(tr.text.tolist(), tr.label.values)
         models[variant] = m
         for tname, t in tests.items():
             save_preds("tfidf_lr", variant, tname, t, m.predict_proba(t.text.tolist()), 0.5)
 
     MODELS.mkdir(exist_ok=True)
-    joblib.dump(models["real+synth"], MODELS / "tfidf_lr_real_synth.joblib")
     joblib.dump(models["real"], MODELS / "tfidf_lr_real.joblib")
+    joblib.dump(models["real+synth"], MODELS / "tfidf_lr_real_synth.joblib")
+    joblib.dump(models["real+synth+spelling"], MODELS / "tfidf_lr_spelling.joblib")
+    weights = models["real+synth+spelling"].spelling_weights()
+    (REPORTS / "spelling_weights.json").write_text(json.dumps(weights, indent=2), encoding="utf-8")
+    print("learned spelling feature weights:", weights)
+
+    # How often each class trips the spelling rule, per data source (is the signal real?).
+    rows = []
+    for name, d in [("train_real", train), ("synthetic", synth), *tests.items()]:
+        flagged = [rules.spelling_hit(t) is not None for t in d.text]
+        for lab in (0, 1):
+            sel = [f for f, y in zip(flagged, d.label) if y == lab]
+            if sel:
+                rows.append({"set": name, "label": "scam" if lab else "genuine", "n": len(sel),
+                             "share_with_spelling_flag": round(sum(sel) / len(sel), 3)})
+    pd.DataFrame(rows).to_csv(REPORTS / "spelling_by_class.csv", index=False)
+    print(pd.DataFrame(rows).to_string(index=False))
 
     # Error analysis on the MOZ *dev* half only; the test half stays unseen.
-    m = models["real+synth"]
+    m = models["real+synth+spelling"]
     moz = tests["moz_dev"].assign(p=m.predict_proba(tests["moz_dev"].text.tolist()))
     chal = tests["gh_challenge"]
     chal = chal.assign(p=m.predict_proba(chal.text.tolist()), rule_score=rules.predict_score(chal.text.tolist()))

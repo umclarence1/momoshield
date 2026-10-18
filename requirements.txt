@@ -14,3 +14,4 @@ torch==2.14.1+cpu
 transformers==5.20.1
 uvicorn==0.54.0
 pytest
+pyspellchecker==0.9.1

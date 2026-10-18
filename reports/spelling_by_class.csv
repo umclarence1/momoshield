@@ -1,0 +1,13 @@
+set,label,n,share_with_spelling_flag
+train_real,genuine,4184,0.233
+train_real,scam,916,0.293
+synthetic,genuine,749,0.08
+synthetic,scam,480,0.027
+in_domain,genuine,1068,0.247
+in_domain,scam,227,0.238
+moz_dev,genuine,769,0.104
+moz_dev,scam,269,0.041
+moz_test,genuine,866,0.104
+moz_test,scam,273,0.073
+gh_challenge,genuine,20,0.05
+gh_challenge,scam,20,0.0

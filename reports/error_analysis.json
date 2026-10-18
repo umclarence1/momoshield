@@ -2,193 +2,193 @@
   "moz_dev_missed_scams": [
     {
       "text": "Sorry, Peo, I'm sorry. I'm sorry. I'm sorry. I'm sorry. I'm sorry. I'm sorry.",
-      "p": 0.001886658263146953
+      "p": 0.002092982168600412
     },
     {
       "text": "Sorry, send me in this number. That's the value now.",
-      "p": 0.028395190393825803
+      "p": 0.0317835881742981
     },
     {
       "text": "MoMo Confirmed <TXID>. Your balance was RETURNED by- <NUM> - VODACOM. Your new MoMo balance and <AMOUNT>. MoMo and easy!",
-      "p": 0.05258095026277441
+      "p": 0.05107958935011099
     },
     {
       "text": "Good afternoon, I'm asking to send this number to the beto842917097.",
-      "p": 0.0784204347046909
+      "p": 0.08086662091564852
     },
     {
       "text": "That's a good transfer value. In this number, you know the name of the ERNESTO DOES,",
-      "p": 0.10566282228500751
+      "p": 0.09707624038794589
     },
     {
       "text": "MoMo Confirmed <TXID>. Your MoMo balance was retained and blocked by <NUM>- VODACOM. Your new MoMo balance and <AMOUNT> .MoMo and easy",
-      "p": 0.12144480491477228
+      "p": 0.11635854791917442
     },
     {
       "text": "Good morning, you can send that value to this nr848508489. It has MoMo this in the name of cristina carlos",
-      "p": 0.13854513012460623
+      "p": 0.13354897243037445
     },
     {
       "text": "This value may be added to your cart.",
-      "p": 0.15160231624117101
-    },
-    {
-      "text": "This item is issued in the name of,BENDITA SIMAÕ or in MoMo.",
-      "p": 0.16371727362155783
+      "p": 0.1600895464715998
     },
     {
       "text": "VALUE IN THE WAY IN WHICH NUMBER IN THE WAY IN THIS SHIP IN THE MOVEL ACCOUNT OR IN THE M-PESS COME IN THE NAME OF MARIO MADRISA PARDONE.",
-      "p": 0.175243589063127
+      "p": 0.16191113774978372
+    },
+    {
+      "text": "This item is issued in the name of,BENDITA SIMAÕ or in MoMo.",
+      "p": 0.21572035767024725
     },
     {
       "text": "I'm sorry, I'm sending that amount to MoMo. By sending it to this new number of my name Esperana Armando.",
-      "p": 0.22952826280248725
+      "p": 0.22766774573509885
     },
     {
       "text": "MoMo Confirmed <TXID>. Dear Customer Your balance was retained and blocked by <NUM>-Vodacom. Your new MoMo balance and <AMOUNT>. MoMo and easy.",
-      "p": 0.2520470525377881
+      "p": 0.2639065741555544
     },
     {
       "text": "That's what he's saying. He's in this number, MoMo <PHONE>, is in the name of CIPRIANO FAUSTINO",
-      "p": 0.2855040662457295
+      "p": 0.2666788966204659
     },
     {
-      "text": "My Account Has Problem Value Already You Can Transfer In This Nr Of MoMo Or Item <NUM> Nr 857757893Come In Name OF MANUAL NARCISIO Ok.",
-      "p": 0.29138198924396064
+      "text": "That's good, that's the value you transfer in that number <PHONE>, get out IDALIN NAME Francisco Ndacoma.",
+      "p": 0.32397764085610276
     },
     {
-      "text": "Hey! My Number Has Problem, That Value You Can Transfer In That Number,<PHONE> Sai Name CHICO MANUEL FRANCISCO.OK",
-      "p": 0.30458785111526837
+      "text": "The value of the value of the value of the product used does not exceed EUR <PHONE>.",
+      "p": 0.3353396163991632
     }
   ],
   "moz_dev_false_alarms": [
     {
       "text": "Dear Customer, the mobile account now and *134#. Please activate to continue to use the service. For more information, contact <PHONE>",
-      "p": 0.9991847283889008
+      "p": 0.9991417432579911
     },
     {
       "text": "Trf. BIM/MoMo From account: <PHONE> To cellphone: <PHONE> Amount: <AMOUNT> Commission <AMOUNT> Date <DATE> <TIME>Call <NUM> if you know of",
-      "p": 0.9986029916194579
+      "p": 0.9982202423067646
     },
     {
       "text": "Millennium mobile Digite *181# i IZI, i más facil Your number <PHONE> received <AMOUNT> credit sent by <PHONE> More for All",
-      "p": 0.9978685950938763
+      "p": 0.9977732312249273
     },
     {
       "text": "Movements : Purchase of credit for another number <NUM><AMOUNT>; Lifting in agent <PHONE> <NUM>.<AMOUNT>; Transference <PHONE> <AMOUNT>; Lifting in agent <PHONE> <NUM>.<AMOUNT>; Bank transfer for customer <PHONE> <NUM>.<AMOUNT>; MoMo and easy!",
-      "p": 0.9970522325920537
-    },
-    {
-      "text": "Transfer to mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, at <DATE> <TIME>.",
-      "p": 0.99547673363385
+      "p": 0.9959832780762573
     },
     {
       "text": "You have been circulating a text message asking the customer to click on a link of dubious origin. Moza always makes contact with the identifier above (MozaBanco). Never click any link and always delete these messages for your security. For more information contact <NUM> or <PHONE>. Moza",
-      "p": 0.9940771108700842
+      "p": 0.9952283827428112
     },
     {
-      "text": "Watch online TV, videos, movies and more without spending any data. Send ON to <NUM> (for free <NUM> days) or access <URL>",
-      "p": 0.9936680003315924
+      "text": "Millennium mobile Trf. BIM/BIM Estimated Customer Your BIM Account <PHONE> received from <NAME> the value of <NUM> Operacao Atraves No. <TXID>",
+      "p": 0.9944071873922888
     },
     {
-      "text": "Millennium mobile Trf. BIM/MoMo From account: <PHONE> To cell phone: <PHONE> Amount: <AMOUNT> Was gift. Transaction No. <PHONE>",
-      "p": 0.9935120600793218
-    },
-    {
-      "text": "Transfer of the lettero <NUM>/BCI account to the mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, in <DATE> <TIME>. MoMo.",
-      "p": 0.9930669587451085
-    },
-    {
-      "text": "Transfer to mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, in <DATE> <TIME>. MoMo.",
-      "p": 0.9926252582848053
-    },
-    {
-      "text": "Transfer of the letter account <NUM>/BCI to the mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, in <DATE> <TIME>. MoMo.",
-      "p": 0.9919896560069502
-    },
-    {
-      "text": "Transfer of the letter <NUM>/BCI account to the mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, in <DATE> <TIME>. MoMo.",
-      "p": 0.9919896560069502
-    },
-    {
-      "text": "Transfer to mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, at <DATE> <TIME>. MoMo.",
-      "p": 0.991977206779746
-    },
-    {
-      "text": "Send the spring to This number <PHONE>",
-      "p": 0.9913868160903679
+      "text": "Transfer to mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, at <DATE> <TIME>.",
+      "p": 0.9942184795432683
     },
     {
       "text": "We inform you that within <NUM> days you may lose access to Moza Ja (*247#) due to the irregularity in the number of mobiles associated with the service. Go to a nearest balcony to proceed with regularization. More info <NUM> or <PHONE>. Moza",
-      "p": 0.9907693604765492
+      "p": 0.9934831758884524
+    },
+    {
+      "text": "Millennium mobile Trf. BIM/MoMo From account: <PHONE> To cell phone: <PHONE> Amount: <AMOUNT> Was gift. Transaction No. <PHONE>",
+      "p": 0.9917769431116311
+    },
+    {
+      "text": "Watch online TV, videos, movies and more without spending any data. Send ON to <NUM> (for free <NUM> days) or access <URL>",
+      "p": 0.991723474284997
+    },
+    {
+      "text": "Transfer of the lettero <NUM>/BCI account to the mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, in <DATE> <TIME>. MoMo.",
+      "p": 0.9912967741624902
+    },
+    {
+      "text": "Send the spring to This number <PHONE>",
+      "p": 0.9912535280977572
+    },
+    {
+      "text": "Transfer to mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, in <DATE> <TIME>. MoMo.",
+      "p": 0.9906424660521685
+    },
+    {
+      "text": "Transfer to mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, at <DATE> <TIME>. MoMo.",
+      "p": 0.9899772613161586
+    },
+    {
+      "text": "Transfer of the letter account <NUM>/BCI to the mobile account <PHONE> in the amount of <NUM>,<AMOUNT> successfully made, in <DATE> <TIME>. MoMo.",
+      "p": 0.9898223750201726
     }
   ],
   "challenge_errors": [
     {
       "kind": "scam_fake_alert",
       "text": "Cash In received for <AMOUNT> from <NAME> Your balance is <AMOUNT>. please confirm receipt",
-      "p": 0.31407578465522795,
+      "p": 0.3156161253352287,
       "rule_score": 0.0
     },
     {
       "kind": "scam_fake_alert",
       "text": "You have received <AMOUNT> from <NAME> New balance <AMOUNT>",
-      "p": 0.05233948344370363,
+      "p": 0.04802942463609788,
       "rule_score": 0.0
     },
     {
       "kind": "scam_otp",
       "text": "I am calling from MTN, a reversal code will come to your phone, read it to me so we can cancel the wrong payment",
-      "p": 0.19571018200905146,
+      "p": 0.18754295223781228,
       "rule_score": 0.5
     },
     {
       "kind": "scam_impersonate",
       "text": "Hello dear, I am stranded at Kumasi station, my phone was stolen. This is my new number. Send <AMOUNT> for transport please",
-      "p": 0.48453439282276456,
+      "p": 0.49655576705859034,
       "rule_score": 0.0
     },
     {
       "kind": "scam_impersonate",
       "text": "Mum it's me, I lost my phone. Please send <AMOUNT> to this number, I'll explain later",
-      "p": 0.37576847665593344,
+      "p": 0.39189196240096164,
       "rule_score": 1.5
     },
     {
       "kind": "scam_evasive",
       "text": "Hello, did you see the money I sent? Please check and call me back on this number",
-      "p": 0.29082836398152984,
+      "p": 0.29117821823585327,
       "rule_score": 0.0
     },
     {
       "kind": "scam_evasive",
       "text": "Your transaction of <AMOUNT> is on hold. Our officer will call you shortly, follow his instructions",
-      "p": 0.34842858762962325,
+      "p": 0.32178877191067157,
       "rule_score": 0.0
     },
     {
       "kind": "scam_evasive",
       "text": "Charley the MoMo I sent, the person says it hasn't arrived and it shows on your side. Help me out, send it to him direct",
-      "p": 0.09339468614453654,
+      "p": 0.09639591055798126,
       "rule_score": 0.0
     },
     {
       "kind": "hard_negative",
       "text": "MTN: We will never ask for your MoMo PIN. If anyone calls claiming you received money by mistake, report to <NUM>.",
-      "p": 0.8075763586407737,
+      "p": 0.7727558855478809,
       "rule_score": 2.5
     },
     {
       "kind": "hard_negative",
       "text": "Kofi I mistakenly sent you <NUM> instead of <NUM>, just keep the <NUM> for credit",
-      "p": 0.547386873023418,
+      "p": 0.5298581094221119,
       "rule_score": 2.0
     },
     {
       "kind": "hard_negative",
       "text": "Your MoMo wallet has been temporarily locked after <NUM> wrong PIN attempts. Visit any MTN service centre with your Ghana Card.",
-      "p": 0.8962972286456146,
-      "rule_score": 0.5
+      "p": 0.9229812619473987,
+      "rule_score": 1.5
     }
   ]
 }

@@ -7,6 +7,8 @@ literally true about the message, unlike word-importance highlights).
 import re
 from dataclasses import dataclass
 
+import spelling
+
 
 @dataclass(frozen=True)
 class Rule:
@@ -48,11 +50,27 @@ RULES = [
 ]
 
 THRESHOLD = 2.0
+# Bad spelling alone is not enough to call a message a scam (friends misspell too), but
+# together with any other red flag it pushes the message over the threshold.
+SPELLING_WEIGHT = 1.0
+
+
+def spelling_hit(text: str):
+    typos, grammar = spelling.find_typos(text), spelling.find_grammar(text)
+    if not typos and not grammar:
+        return None
+    shown = [f"“{w}”" for w in (typos + grammar)[:3]]
+    reason = (f"Contains spelling or grammar mistakes ({', '.join(shown)}). "
+              "Official MoMo and bank messages are computer-generated and correctly spelled.")
+    return Rule("spelling", reason, None, SPELLING_WEIGHT)
 
 
 def check(text: str):
     """Return (score, list of triggered Rule)."""
     hits = [r for r in RULES if r.pattern.search(text or "")]
+    sp = spelling_hit(text or "")
+    if sp:
+        hits.append(sp)
     return sum(r.weight for r in hits), hits
 
 

@@ -137,7 +137,7 @@ footer { font-size: 14px; color: var(--muted); }
     <div class="examples" role="group" aria-label="Example messages">
       <span>Try:</span>
     </div>
-    <p class="privacy">The check runs on your device. The message is never uploaded or stored.</p>
+    <p class="privacy">The check runs on this computer. The message is not sent anywhere else and is not stored.</p>
   </section>
 
   <section class="result" id="result" aria-live="polite">
@@ -186,13 +186,14 @@ footer { font-size: 14px; color: var(--muted); }
   <details>
     <summary>How this works and how accurate it is</summary>
     <div class="about">
-      <p>A text classifier (TF-IDF features with logistic regression) gives the score. Twelve hand-written red-flag rules give the reasons. The final risk is the higher of the two. The model was trained on public English SMS spam and phishing data plus synthetic Ghana-style MoMo messages.</p>
+      <p>A text classifier (TF-IDF features with logistic regression) gives the score. Hand-written red-flag rules give the reasons, and the final risk is the higher of the two. The model was trained on public English SMS spam and phishing data plus synthetic Ghana-style MoMo messages.</p>
+      <p><b>Spelling.</b> Misspelled words ("recieved", "acount") and broken grammar ("You has received", "Dear costumer") are flagged and raise the score. SMS shorthand and Ghanaian words such as "pls", "u", "abeg" and "chale" are not counted. Bad spelling alone does not make a message a scam, because friends misspell too. Combined with any other red flag, it pushes the message to "Suspicious" or higher.</p>
       <div class="tablewrap">
         <table class="stats">
           <thead><tr><th>Tested on</th><th>Scams caught</th><th>Genuine messages flagged</th></tr></thead>
           <tbody>
-            <tr><td>Held-out English SMS</td><td class="num">95%</td><td class="num">0.3%</td></tr>
-            <tr><td>Real mobile-money SMS from Mozambique (translated), never seen in training</td><td class="num">93%</td><td class="num">29%</td></tr>
+            <tr><td>Held-out English SMS</td><td class="num">96%</td><td class="num">0.5%</td></tr>
+            <tr><td>Real mobile-money SMS from Mozambique (translated), never seen in training</td><td class="num">93%</td><td class="num">28%</td></tr>
             <tr><td>40 hand-written Ghana test messages</td><td class="num">60%</td><td class="num">15%</td></tr>
           </tbody>
         </table>
@@ -204,9 +205,6 @@ footer { font-size: 14px; color: var(--muted); }
   <footer>Report fraud to your provider. On MTN, forward suspicious messages to 1515.</footer>
 </div>
 
-<script>
-/*DETECTOR*/
-</script>
 <script>
 (function () {
   "use strict";
@@ -222,7 +220,7 @@ footer { font-size: 14px; color: var(--muted); }
   const sms = $("sms");
   const chipsBox = document.querySelector(".examples");
   const LABEL = { high: "Likely scam", medium: "Suspicious", low: "No common scam pattern found" };
-  let model = null, timer = null;
+  let timer = null, seq = 0;
 
   const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -264,8 +262,14 @@ footer { font-size: 14px; color: var(--muted); }
     $("scrubbed").innerHTML = esc(r.scrubbedText).replace(/&lt;(PHONE|AMOUNT|NAME|TXID|URL|EMAIL|DATE|TIME|NUM)&gt;/g, "<b>&lt;$1&gt;</b>");
   }
 
-  function run() {
-    if (!model) return;
+  function showError(msg) {
+    $("verdict").dataset.level = "medium";
+    $("level").textContent = msg;
+    $("riskpct").textContent = "";
+    $("meterFill").style.width = "0%";
+  }
+
+  async function run() {
     const text = sms.value.trim();
     if (!text) {
       $("verdict").dataset.level = "low";
@@ -275,7 +279,24 @@ footer { font-size: 14px; color: var(--muted); }
       ["reasons", "advice", "bubble", "scrubbed"].forEach((id) => { $(id).innerHTML = ""; });
       return;
     }
-    render(MoMoDetector.analyse(model, text), text);
+    const mine = ++seq;
+    try {
+      const res = await fetch("/api/predict", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }),
+      });
+      if (!res.ok) throw new Error(res.status === 422 ? "too long" : String(res.status));
+      const r = await res.json();
+      if (mine !== seq) return;  // a newer check has started; drop this answer
+      render({
+        risk: r.risk, level: r.level, reasons: r.reasons, advice: r.advice,
+        influentialWords: r.influential_words, scrubbedText: r.scrubbed_text,
+      }, text);
+    } catch (e) {
+      if (mine !== seq) return;
+      showError(e.message === "too long"
+        ? "That message is too long. Paste a single SMS (up to 2,000 characters)."
+        : "The detector server is not responding. Check that it is running, then edit the message to retry.");
+    }
   }
 
   sms.addEventListener("input", () => { markChip(-1); clearTimeout(timer); timer = setTimeout(run, 150); });
@@ -290,11 +311,6 @@ footer { font-size: 14px; color: var(--muted); }
 
   sms.value = EXAMPLES[0][1];
   markChip(0);
-  fetch("model.json")
-    .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then((j) => { model = MoMoDetector.makeModel(j); run(); })
-    .catch(() => {
-      $("level").textContent = "The detector could not load. Reload the page to try again.";
-    });
+  run();
 })();
 </script>
