@@ -9,3 +9,8 @@ reports/preds/
 reports/log_*.txt
 reports/translate_log.txt
 reports/streamlit_smoke.txt
+# Built site and generated web assets: python src/export_web.py && python src/build_site.py
+web/dist/
+web/model.json
+web/parity_fixture.json
+.pytest_cache/

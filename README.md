@@ -44,7 +44,18 @@ python src/prepare_data.py
 python src/train_eval.py             # results -> reports/
 streamlit run app.py                 # demo
 uvicorn api:app --app-dir src        # API: POST /predict {"text": "..."}
+python src/export_web.py             # model -> web/model.json + parity fixture
+node web/parity_test.js              # JS port must match Python exactly
+python src/build_site.py             # static site -> web/dist/ (index.html + model.json)
+pytest tests
 ```
+
+## Website
+
+`web/` is a static site that runs the whole detector in the browser: scrubbing, rules and the
+TF-IDF + LR model ported to JavaScript (`web/detector.js`). Nothing is uploaded. The parity test
+checks the port against Python on 1,579 test messages: identical scrubbing and rule scores,
+max probability difference 3e-7. Host `web/dist/` on any static host (GitHub Pages, Netlify).
 
 ## Baseline results (v2)
 
