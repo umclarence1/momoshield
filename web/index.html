@@ -329,7 +329,11 @@ footer { padding-block: 32px 40px; text-align: center; font-size: 13px; color: v
       });
       if (!res.ok) throw new Error(String(res.status));
       const r = await res.json();
-      if (mine === seq) render(r, text);
+      if (mine === seq) {
+        render(r, text);
+        // A shared link should land on the message and its result, not the page intro.
+        if (deepLinked) { deepLinked = false; $("result").scrollIntoView({ block: "start" }); }
+      }
     } catch (e) {
       if (mine === seq) showNotice("The checker isn't running", "Start it with python run_site.py, then try again.");
     } finally {
@@ -340,8 +344,15 @@ footer { padding-block: 32px 40px; text-align: center; font-size: 13px; color: v
   $("checkBtn").addEventListener("click", run);
   sms.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); } });
 
-  // Open with a worked example so the page shows what it does.
-  sms.value = EXAMPLES[0][2];
+  // Open with a worked example so the page shows what it does. A link such as
+  // #fake-alert opens that example instead (handy for sharing a specific case).
+  const slug = (s) => s.toLowerCase().replace(/[^a-z]+/g, "-");
+  const linked = EXAMPLES.find(([name]) => "#" + slug(name) === location.hash);
+  let deepLinked = !!linked;
+  const start = linked || EXAMPLES[0];
+  sms.value = start[2];
+  sender.value = start[1];
+  showSender(!!start[1]);
   run();
 })();
 </script>
