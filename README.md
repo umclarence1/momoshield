@@ -10,7 +10,9 @@ PIN/OTP theft, misspelled "official" messages), explains why, and tells the user
 ```
 
 The page is served by a local FastAPI server (`src/api.py`), and the Python model scores each
-message on your computer. API: `POST /api/predict {"text": "..."}`. Pass another port as an
+message on your computer. API: `POST /api/predict {"text": "...", "sender": "..."}`.
+The optional **sender** (as shown on the phone) catches forged alerts: an official-looking
+"Payment received" message sent from an ordinary phone number is flagged as almost certainly fake. Pass another port as an
 argument (`python run_site.py 9000`) if 8765 is taken.
 
 ## Research question
@@ -73,6 +75,7 @@ python src/train_eval.py             # baselines -> reports/preds, models/
 python src/train_transformer.py --model distilbert-base-uncased --tag distilbert
 python src/train_transformer.py --model distilbert-base-multilingual-cased --tag mdistilbert
 python src/summarize.py              # -> reports/results.md (with 95% CIs)
+python src/threshold.py              # -> reports/threshold_analysis.md
 pytest tests
 streamlit run app.py                 # alternative demo UI
 ```

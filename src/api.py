@@ -19,11 +19,12 @@ predictor = Predictor()
 
 class Message(BaseModel):
     text: str = Field(..., min_length=1, max_length=2000)
+    sender: str | None = Field(None, max_length=40, description="Sender as shown on the phone, optional")
 
 
 @app.post("/api/predict")
 def predict(msg: Message):
-    return predictor.analyse(msg.text)
+    return predictor.analyse(msg.text, msg.sender)
 
 
 @app.get("/api/health")

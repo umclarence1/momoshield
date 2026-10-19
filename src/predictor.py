@@ -20,6 +20,8 @@ ADVICE = {
     "fee_to_receive": "Paying a fee to receive money is a classic scam pattern.",
     "link": "Do not open links in unexpected SMS messages.",
     "spelling": "Poor spelling is a warning sign in a message about money. Genuine provider messages are carefully written.",
+    "alert_from_phone": "Ignore this alert. Check your balance on the official MoMo menu: if the money is not there, it never arrived. Do not send anything back.",
+    "provider_from_phone": "Do not reply or call back. Contact your provider through its official channels if you are worried about your account.",
 }
 # Placeholder tokens as the word vectoriser sees them (it strips the angle brackets).
 PLACEHOLDER_WORDS = {"phone", "amount", "num", "txid", "url", "email", "name", "date", "time"}
@@ -30,14 +32,16 @@ class Predictor:
     def __init__(self, path=MODEL_PATH):
         self.model = joblib.load(path)
 
-    def analyse(self, text: str) -> dict:
+    def analyse(self, text: str, sender: str | None = None) -> dict:
         clean = scrub(text)
         p = float(self.model.predict_proba([clean])[0])
-        rule_score, hits = rules.check(clean)
+        rule_score, hits = rules.check(clean, sender)
         # Combine: the model score, nudged up when hard red flags fire.
         risk = max(p, min(1.0, rule_score / 5))
         level = "high" if risk >= 0.7 else "medium" if risk >= 0.4 else "low"
-        advice = [ADVICE[h.name] for h in hits if h.name in ADVICE] or [DEFAULT_ADVICE]
+        # Sender-based advice is the most specific, so it goes first.
+        hits_for_advice = sorted(hits, key=lambda h: not h.name.endswith("_from_phone"))
+        advice = [ADVICE[h.name] for h in hits_for_advice if h.name in ADVICE] or [DEFAULT_ADVICE]
         return {
             "risk": round(risk, 3),
             "level": level,
@@ -47,4 +51,5 @@ class Predictor:
             "influential_words": [w for w, c in self.model.top_words(clean, k=15)
                                   if c > 0 and len(w) > 2 and not set(w.split()) & PLACEHOLDER_WORDS][:6],
             "scrubbed_text": clean,
+            "sender_kind": rules.sender_kind(sender),
         }

@@ -95,6 +95,11 @@ main { padding-block: 32px 64px; display: flex; flex-direction: column; gap: 56p
 
 textarea { width: 100%; min-height: 168px; resize: vertical; padding: 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); font: 16px/1.55 var(--sans); }
 textarea:focus { border-color: var(--focus); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 25%, transparent); }
+.sender-row { display: flex; flex-direction: column; gap: 6px; }
+.sender-row label { font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.sender-row label span { font-weight: 400; color: var(--muted); margin-left: 6px; }
+.sender-row input { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); font: 15px var(--sans); }
+.sender-row input:focus { border-color: var(--focus); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 25%, transparent); }
 .counter { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .btn { display: inline-flex; align-items: center; gap: 8px; font: 600 15px var(--sans); border-radius: 10px; padding: 11px 18px; cursor: pointer; border: 1px solid transparent; }
@@ -227,7 +232,7 @@ footer .container { padding-block: 22px; display: flex; justify-content: space-b
     </div>
     <div class="facts" aria-label="Key facts">
       <div class="fact"><b>93%</b><span>of real MoMo scams caught in testing</span></div>
-      <div class="fact"><b>13</b><span>red-flag checks, including spelling</span></div>
+      <div class="fact"><b>15</b><span>red-flag checks, incl. spelling and sender</span></div>
       <div class="fact"><b>0</b><span>messages stored or sent online</span></div>
     </div>
   </div>
@@ -238,6 +243,10 @@ footer .container { padding-block: 22px; display: flex; justify-content: space-b
     <div class="card">
       <div class="card-head"><h2><label for="sms">Message</label></h2><span class="counter" id="counter">0 / 2000</span></div>
       <div class="card-body">
+        <div class="sender-row">
+          <label for="sender">Sender <span>optional, as shown on your phone</span></label>
+          <input id="sender" type="text" maxlength="40" autocomplete="off" spellcheck="false" placeholder="e.g. MobileMoney or 0244 123 456">
+        </div>
         <textarea id="sms" maxlength="2000" spellcheck="false" placeholder="Paste the SMS here, for example: You have received GHS 500 by mistake…"></textarea>
         <div class="row">
           <button class="btn btn-primary" id="checkBtn" type="button">Check message <svg class="icon"><use href="#i-arrow"/></svg></button>
@@ -314,7 +323,7 @@ footer .container { padding-block: 22px; display: flex; justify-content: space-b
     </div>
     <div class="steps">
       <div class="card step"><div class="num">1</div><h3>Remove personal details</h3><p>Phone numbers, amounts, names and transaction IDs are replaced with labels such as &lt;PHONE&gt;, so the check looks at how the message is written, not who it mentions.</p></div>
-      <div class="card step"><div class="num">2</div><h3>Look for red flags</h3><p>Thirteen checks look for known scam signs: "sent by mistake", requests to send money back, threats to block your account, PIN or OTP requests, fees to claim prizes, and spelling or grammar mistakes.</p></div>
+      <div class="card step"><div class="num">2</div><h3>Look for red flags</h3><p>Fifteen checks look for known scam signs: "sent by mistake", requests to send money back, threats to block your account, PIN or OTP requests, fees to claim prizes, spelling or grammar mistakes, and official-looking alerts sent from an ordinary phone number.</p></div>
       <div class="card step"><div class="num">3</div><h3>Score the message</h3><p>A machine-learning model trained on thousands of SMS gives a risk score. The final rating is the higher of the model score and the red-flag score.</p></div>
     </div>
     <div class="split">
@@ -330,7 +339,7 @@ footer .container { padding-block: 22px; display: flex; justify-content: space-b
       </div>
       <div class="card callout">
         <h3><svg class="icon"><use href="#i-alert"/></svg>What it cannot do</h3>
-        <p>It only reads the text. A forged "Payment received" alert can be word-for-word identical to a real one; only the sender is different. <b>A low score does not mean a message is safe.</b></p>
+        <p>A forged "Payment received" alert can be word-for-word identical to a real one; only the sender is different. Fill in the <b>Sender</b> field to catch these. Without it, <b>a low score does not mean a message is safe.</b></p>
         <p>It is a research prototype and has not been tested on real Ghanaian scam messages. Always check your balance on the official menu before sending money.</p>
       </div>
     </div>
@@ -347,13 +356,16 @@ footer .container { padding-block: 22px; display: flex; justify-content: space-b
 <script>
 (function () {
   "use strict";
+  const ALERT = "Payment received for GHS 120.00 from AKUA DARKO Current Balance: GHS 340.55. Reference: lunch. Transaction ID: 51234098765. TRANSACTION FEE: 0.00";
+  // [label, expected, sender, text]
   const EXAMPLES = [
-    ["Mistaken transfer", "high", "You has recieved GHS 500 by mistake. Please send it back to 0244123456 immediately or your account will be blocked."],
-    ["Fake promo", "high", "Congratulations! Your number has won GHS 5,000 in the MoMo anniversary promo. Pay GHS 50 processing fee to 0551234567 to receive your prize."],
-    ["PIN request", "high", "Dear costumer to receive your bonus of GHS 300 dial *170# and enter your PIN to confirm."],
-    ["Blocked account", "high", "Your MoMo account has been blocked due to a wrong transaction. Call 0598765432 now to unblock."],
-    ["Genuine alert", "low", "Payment received for GHS 120.00 from AKUA DARKO Current Balance: GHS 340.55. Reference: lunch. Transaction ID: 51234098765. TRANSACTION FEE: 0.00"],
-    ["Message from a friend", "low", "Did you receive the GHS 80? Network was bad so I'm not sure it went"],
+    ["Mistaken transfer", "high", "0244 123 456", "You has recieved GHS 500 by mistake. Please send it back to 0244123456 immediately or your account will be blocked."],
+    ["Fake alert", "high", "0551 234 567", ALERT],
+    ["Fake promo", "high", "", "Congratulations! Your number has won GHS 5,000 in the MoMo anniversary promo. Pay GHS 50 processing fee to 0551234567 to receive your prize."],
+    ["PIN request", "high", "", "Dear costumer to receive your bonus of GHS 300 dial *170# and enter your PIN to confirm."],
+    ["Blocked account", "high", "", "Your MoMo account has been blocked due to a wrong transaction. Call 0598765432 now to unblock."],
+    ["Genuine alert", "low", "MobileMoney", ALERT],
+    ["Message from a friend", "low", "", "Did you receive the GHS 80? Network was bad so I'm not sure it went"],
   ];
   const LEVEL = {
     high: ["Likely scam", "This message matches known Mobile Money scam patterns.", "i-alert"],
@@ -369,12 +381,13 @@ footer .container { padding-block: 22px; display: flex; justify-content: space-b
   const icon = (id) => `<svg class="icon"><use href="#${id}"/></svg>`;
 
   const swatch = { high: "var(--high)", low: "var(--low)" };
-  EXAMPLES.forEach(([name, kind, text], i) => {
+  const senderBox = $("sender");
+  EXAMPLES.forEach(([name, kind, sender, text], i) => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "chip"; b.id = "ex" + i;
     b.innerHTML = `<span class="sw" style="background:${swatch[kind]}"></span>${esc(name)}`;
     b.setAttribute("aria-pressed", "false");
-    b.addEventListener("click", () => { sms.value = text; markChip(i); updateCounter(); run(); });
+    b.addEventListener("click", () => { sms.value = text; senderBox.value = sender; markChip(i); updateCounter(); run(); });
     $("examples").appendChild(b);
   });
   function markChip(i) {
@@ -436,7 +449,8 @@ footer .container { padding-block: 22px; display: flex; justify-content: space-b
     $("checkBtn").innerHTML = `<span class="spin" aria-hidden="true"></span> Checking`;
     try {
       const res = await fetch("/api/predict", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }),
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, sender: senderBox.value.trim() || null }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const r = await res.json();
@@ -452,9 +466,10 @@ footer .container { padding-block: 22px; display: flex; justify-content: space-b
   }
 
   sms.addEventListener("input", () => { markChip(-1); updateCounter(); clearTimeout(timer); timer = setTimeout(run, 250); });
+  senderBox.addEventListener("input", () => { markChip(-1); clearTimeout(timer); timer = setTimeout(run, 250); });
   sms.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); } });
   $("checkBtn").addEventListener("click", run);
-  $("clearBtn").addEventListener("click", () => { sms.value = ""; markChip(-1); updateCounter(); idle(); sms.focus(); });
+  $("clearBtn").addEventListener("click", () => { sms.value = ""; senderBox.value = ""; markChip(-1); updateCounter(); idle(); sms.focus(); });
 
   const boxes = ["c1", "c2", "c3", "c4"].map($);
   boxes.forEach((b) => b.addEventListener("change", () => {
@@ -467,7 +482,8 @@ footer .container { padding-block: 22px; display: flex; justify-content: space-b
   }));
 
   idle();
-  sms.value = EXAMPLES[0][2];
+  sms.value = EXAMPLES[0][3];
+  senderBox.value = EXAMPLES[0][2];
   markChip(0); updateCounter(); run();
 })();
 </script>

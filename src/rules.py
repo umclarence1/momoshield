@@ -65,12 +65,52 @@ def spelling_hit(text: str):
     return Rule("spelling", reason, None, SPELLING_WEIGHT)
 
 
-def check(text: str):
-    """Return (score, list of triggered Rule)."""
+# ---------------------------------------------------------------- sender
+# The text of a forged "Payment received" alert can be identical to a real one; the sender is
+# what differs (an ordinary phone number instead of the provider's sender name). The public
+# datasets have no sender field, so this check is rule-based and cannot be scored on them.
+_PHONE_SENDER = re.compile(r"\+?[\d\s()-]{7,}")
+_SHORTCODE = re.compile(r"\d{3,6}")
+_ALERT_TEXT = _r(r"\b(payment received|cash ?in|you have received|you('ve| have) been credited|credited with|"
+                 r"current balance|new balance|available balance|transaction id|financial transaction|"
+                 r"confirmed\.? you have)\b")
+_CLAIMS_PROVIDER = {"impersonation", "account_threat", "verify_account", "pin_otp_request", "prize_reward", "dial_code"}
+
+
+def sender_kind(sender):
+    """'phone', 'shortcode', 'name', or None when the user gave no sender."""
+    s = (sender or "").strip()
+    if not s:
+        return None
+    if _SHORTCODE.fullmatch(s):
+        return "shortcode"
+    if _PHONE_SENDER.fullmatch(s) and sum(c.isdigit() for c in s) >= 9:
+        return "phone"
+    return "name"
+
+
+def sender_hits(sender, text, text_hits):
+    if sender_kind(sender) != "phone":
+        return []
+    if _ALERT_TEXT.search(text):
+        return [Rule("alert_from_phone",
+                     "Looks like an official transaction alert but was sent from an ordinary phone number. "
+                     "Real MoMo alerts come from the provider's sender name, so this alert is almost certainly fake.",
+                     None, 4.0)]
+    if _CLAIMS_PROVIDER & {h.name for h in text_hits}:
+        return [Rule("provider_from_phone",
+                     "Talks about your account, PIN or a reward but was sent from an ordinary phone number, "
+                     "not from your provider's sender name.", None, 1.0)]
+    return []
+
+
+def check(text: str, sender: str | None = None):
+    """Return (score, list of triggered Rule). `sender` is optional (as shown on the phone)."""
     hits = [r for r in RULES if r.pattern.search(text or "")]
     sp = spelling_hit(text or "")
     if sp:
         hits.append(sp)
+    hits += sender_hits(sender, text or "", hits)
     return sum(r.weight for r in hits), hits
 
 

@@ -77,6 +77,30 @@ RESULTS_TABLE
 5. **Rules are a poor classifier but a good explainer.** Rules alone catch at most 20% of scams.
    But when a rule fires, its reason ("asks for your PIN") is literally true about the message. So
    the demo uses the model for the risk score and the rules for the explanation.
+6. **Spelling mistakes are a weak signal in the available data.** A common belief is that scam
+   SMS are badly spelled. `src/spelling.py` detects typos (an unknown word one edit from a real
+   word: "recieved", "acount"), grammar slips ("You has received") and wrong-word errors ("Dear
+   costumer"), while ignoring SMS shorthand and Ghanaian words ("pls", "abeg", "chale"). In the
+   English data, scams and genuine messages trip it at almost the same rate (23.8% vs 24.7% on the
+   held-out set; `reports/spelling_by_class.csv`), because everyday SMS is informal. On MOZ it cannot
+   be tested fairly: machine translation fixes the original spelling. As model features it raised
+   MOZ-test PR-AUC from 0.46 to 0.50 with unchanged recall. The model learned that *a* typo or
+   grammar slip points to scam but *many* typos point to genuine (shorthand), see
+   `reports/spelling_weights.json`. It is kept as a stated reason and a score boost, not as a
+   verdict on its own. Only a real Ghanaian test set can settle how much it helps.
+7. **No threshold fixes the false alarms.** Choosing the threshold on MOZ dev and testing on MOZ
+   test (`reports/threshold_analysis.md`): holding false alarms to 10% leaves only 45% recall, and
+   to 5% only 8%. The genuine alerts that get flagged score as high as real scams, so a threshold
+   cannot separate them. The default 0.5 is kept (recall first, as planned).
+
+### Sender check (product feature, not evaluated)
+Because forged alerts can only be told apart by their sender, the website and API take an
+optional **sender** as shown on the phone. If an alert-style message ("Payment received", "Current
+Balance", "Transaction ID") comes from an ordinary phone number, it is flagged as almost certainly
+fake (rule weight 4.0, risk 0.8). A message that claims to be from the provider (account threats,
+PIN requests, prizes) from a phone number gets a smaller boost. A friend's message from a phone
+number is unaffected. None of the public datasets record the sender, so this rule is tested only by
+unit tests, not by the evaluation above.
 
 ### Error analysis (MOZ dev half and challenge set; `reports/error_analysis.json`)
 - **Missed:** "my number has a problem, send the value to this other number in the name of X," which
@@ -88,12 +112,16 @@ RESULTS_TABLE
   no trigger words. It falsely flags MTN's own "we will never ask for your PIN" warning and a
   genuine "wallet locked after wrong PIN attempts" notice.
 
-## 5. Demo
+## 5. Website
 
-`streamlit run app.py` shows a risk level, the rule-based **reasons for concern**, concrete **next
-steps** (check your balance on the official menu, *170# on MTN; never share your PIN or OTP; report to
-1515), and the words that pushed the model towards "scam," with a note that highlights are not proof.
-`uvicorn api:app --app-dir src` serves the same logic as `POST /predict`.
+`python run_site.py` starts a local website at http://localhost:8765 (FastAPI serving
+`web/index.html`; the Python model runs on the same machine, nothing goes online). For each message
+it shows a risk level and score, the red flags found, concrete next steps (check your balance on the
+official menu, *170# on MTN; never share your PIN or OTP; report to 1515), the wording that raised the
+score (with a note that highlights are not proof), and the scrubbed text the model saw. It also has
+the optional sender field, a four-step "before you send money back" checklist, and a plain account of
+accuracy and limits. `POST /api/predict {"text", "sender"}` exposes the same logic. A Streamlit
+version (`streamlit run app.py`) is kept as an alternative.
 
 ## 6. Limitations and honest caveats
 
@@ -110,7 +138,8 @@ steps** (check your balance on the official menu, *170# on MTN; never share your
 
 ## 7. What would make this deployable
 
-1. Use **sender ID** as a feature: official short code vs. personal number. This alone addresses the forged-alert problem.
+1. Read the **sender ID** automatically (for example, as an Android SMS app) instead of asking the
+   user to type it, and measure the sender rule on real labelled messages.
 2. Collect a few hundred **real Ghanaian** scam and genuine messages, with consent, to use as a
    blind test set, for example through a telco or the Cyber Security Authority.
 3. Re-check precision on genuine operator notices and fraud warnings, the main false-alarm source.
