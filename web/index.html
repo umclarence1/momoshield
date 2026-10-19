@@ -6,402 +6,269 @@
 <title>MoMo Scam Check</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
 <style>
-/* Layout: a light, quiet product page. Compact intro, then one analysis console split into
-   an input pane and a results pane, followed by checklist and methodology in plain cards.
-   Single deliberate light theme: no dark surfaces anywhere. */
+/* Layout: one narrow centred column with a single job: paste a message, get a plain answer.
+   Everything technical sits behind "See details" or the two small sections at the end.
+   Single light theme, soft tints only. */
 :root {
   color-scheme: light;
-  --bg: #fafafb;
+  --bg: #f7f8fa;
   --surface: #ffffff;
-  --subtle: #f5f6f8;
-  --line: #e6e8ec;
-  --line-strong: #d6d9df;
-  --ink: #16181d;
-  --ink-2: #3f4550;
+  --subtle: #f3f4f7;
+  --line: #e5e7eb;
+  --ink: #1a1d23;
+  --ink-2: #454b55;
   --muted: #6b7280;
-  --faint: #9aa1ac;
   --accent: #3563d9;
+  --accent-hover: #2c55c4;
   --accent-soft: #eef3fd;
-  --accent-line: #c9d7f6;
-  --high: #c43d3d;  --high-soft: #fdf1f1; --high-line: #f3cfcf;
-  --mid: #b26a12;   --mid-soft: #fdf6eb;  --mid-line: #f1dcb8;
-  --low: #2f8a57;   --low-soft: #eff8f2;  --low-line: #cbe7d6;
-  --hl: #fdeee2; --hl-line: #e8a066;
+  --high: #c43d3d; --high-soft: #fdf2f2; --high-line: #f4d4d4;
+  --mid: #a86412;  --mid-soft: #fdf7ec; --mid-line: #f1dfbf;
+  --low: #2f8a57;  --low-soft: #f0f8f3; --low-line: #cfe8d9;
+  --hl: #fdebd9;
   --sans: "Geist", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --mono: "Geist Mono", ui-monospace, Consolas, monospace;
-  --r: 10px;
-  --shadow: 0 1px 2px rgba(22, 24, 29, .04), 0 2px 8px rgba(22, 24, 29, .04);
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
-.container { max-width: 1160px; margin: 0 auto; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
-@media (max-width: 520px) { .container { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); } }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 640px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
 h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -.015em; text-wrap: balance; }
 p { margin: 0; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
-.label { font-size: 12px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
-.icon { width: 16px; height: 16px; flex: none; }
-.num { font-variant-numeric: tabular-nums; }
+.icon { width: 18px; height: 18px; flex: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* Top bar */
-.topbar { background: rgba(255, 255, 255, .85); backdrop-filter: saturate(1.4) blur(8px); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
-.topbar .container { height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-weight: 600; font-size: 15px; }
-.brand-mark { width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--accent-line); background: var(--accent-soft); display: grid; place-items: center; color: var(--accent); }
-.brand-mark svg { width: 14px; height: 14px; }
-.tag { font: 500 11.5px var(--sans); color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; margin-left: 4px; }
-nav { display: flex; align-items: center; gap: 24px; }
-nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
-nav a:hover { color: var(--ink); }
-.status { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-2); }
-.status i { width: 7px; height: 7px; border-radius: 50%; background: var(--low); box-shadow: 0 0 0 3px var(--low-soft); }
-.status.off i { background: var(--high); box-shadow: 0 0 0 3px var(--high-soft); }
-@media (max-width: 780px) { nav a { display: none; } }
-@media (max-width: 600px) { .tag { display: none; } .brand { white-space: nowrap; } }
-@media (max-width: 380px) { #statusText { display: none; } }
+header { padding-block: 20px; }
+.brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 600; font-size: 15px; color: var(--ink); }
+.brand svg { width: 22px; height: 22px; color: var(--accent); }
 
-/* Intro */
-.intro { padding-block: 44px 28px; display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
-.intro-text { max-width: 620px; display: flex; flex-direction: column; gap: 10px; }
-.intro h1 { font-size: clamp(26px, 3.2vw, 34px); line-height: 1.15; }
-.intro p { color: var(--muted); font-size: 16px; }
-.metrics { display: flex; gap: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
-.metric { padding: 10px 18px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.metric + .metric { border-left: 1px solid var(--line); }
-.metric b { font-size: 18px; font-weight: 600; }
-.metric span { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
-@media (max-width: 560px) { .metrics { width: 100%; } .metric { flex: 1; padding: 10px 12px; } .metric span { white-space: normal; } }
+.hero { padding-block: 28px 24px; text-align: center; display: flex; flex-direction: column; gap: 10px; }
+.hero h1 { font-size: clamp(28px, 6vw, 36px); line-height: 1.15; }
+.hero p { color: var(--muted); font-size: 17px; }
 
-/* Console */
-.console { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); overflow: hidden; }
-@media (max-width: 920px) { .console { grid-template-columns: 1fr; } }
-.pane { padding: 22px 24px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-.pane + .pane { border-left: 1px solid var(--line); background: linear-gradient(var(--surface), var(--surface)); }
-@media (max-width: 920px) { .pane + .pane { border-left: 0; border-top: 1px solid var(--line); } }
-@media (max-width: 520px) { .pane { padding: 18px 16px; } }
-.pane-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.pane-head h2 { font-size: 15px; }
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field label { font-size: 13px; font-weight: 500; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
-.field label span { font-weight: 400; color: var(--faint); }
-input[type="text"], textarea { width: 100%; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); border-radius: 8px; font: 15px/1.55 var(--sans); padding: 10px 12px; transition: border-color .15s, box-shadow .15s; }
-textarea { min-height: 168px; resize: vertical; }
-input[type="text"]::placeholder, textarea::placeholder { color: var(--faint); }
-input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-.actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.btn { font: 500 14px var(--sans); border-radius: 8px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); display: inline-flex; gap: 8px; align-items: center; }
-.btn:hover { background: var(--subtle); }
-.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn-primary:hover { background: #2c55c4; }
-.hint { font: 12px var(--mono); color: var(--faint); margin-left: auto; }
-@media (hover: none), (max-width: 600px) { .hint { display: none; } }
-.samples { display: flex; flex-direction: column; gap: 8px; }
-.sample-list { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { font: 13px var(--sans); color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
-.chip:hover { border-color: var(--line-strong); background: var(--subtle); }
-.chip[aria-pressed="true"] { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent); }
-.chip i { width: 6px; height: 6px; border-radius: 50%; }
-.privacy { display: flex; gap: 10px; font-size: 13px; color: var(--muted); padding-top: 16px; border-top: 1px solid var(--line); }
-.stick { display: flex; flex-direction: column; gap: 18px; }
-@media (min-width: 921px) { .stick { position: sticky; top: 78px; } }
-.privacy .icon { margin-top: 2px; color: var(--faint); }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 3px rgba(26, 29, 35, .04); }
+textarea, input[type="text"] { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font: 16px/1.55 var(--sans); padding: 12px 14px; }
+textarea { min-height: 120px; resize: vertical; }
+textarea::placeholder, input::placeholder { color: #9aa1ac; }
+textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.sender-toggle { align-self: flex-start; background: none; border: 0; padding: 0; font: 14px var(--sans); color: var(--accent); cursor: pointer; }
+.sender-toggle:hover { text-decoration: underline; }
+.sender { display: flex; flex-direction: column; gap: 6px; }
+.sender label { font-size: 14px; color: var(--ink-2); }
+.sender small { color: var(--muted); font-size: 13px; }
+.btn { width: 100%; font: 600 16px var(--sans); color: #fff; background: var(--accent); border: 0; border-radius: 10px; padding: 13px; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
+.btn:hover { background: var(--accent-hover); }
+
+.examples { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 14px; font-size: 14px; color: var(--muted); }
+.chip { font: 14px var(--sans); color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+.chip:hover { border-color: #cfd3da; }
 
 /* Result */
-.summary { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
-.gauge { width: 84px; height: 84px; position: relative; }
-.gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.gauge .track { stroke: var(--subtle); }
-.gauge .arc { stroke: var(--c, var(--faint)); stroke-linecap: round; transition: stroke-dashoffset .4s ease, stroke .2s; }
-.gauge-val { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
-.gauge-val b { font-size: 22px; font-weight: 600; line-height: 1; display: block; }
-.gauge-val span { font-size: 11px; color: var(--faint); display: block; margin-top: 3px; }
-.verdict-line { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.badge { align-self: flex-start; font: 500 12.5px var(--sans); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--bl, var(--line)); background: var(--bs, var(--subtle)); color: var(--c, var(--muted)); display: inline-flex; align-items: center; gap: 6px; }
-.badge i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.verdict-line h3 { font-size: 19px; }
-.verdict-line p { color: var(--muted); font-size: 14px; }
-[data-level="high"] { --c: var(--high); --bs: var(--high-soft); --bl: var(--high-line); }
-[data-level="medium"] { --c: var(--mid); --bs: var(--mid-soft); --bl: var(--mid-line); }
-[data-level="low"] { --c: var(--low); --bs: var(--low-soft); --bl: var(--low-line); }
+.result { margin-top: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.result[data-level="high"] { --c: var(--high); --soft: var(--high-soft); --vline: var(--high-line); }
+.result[data-level="medium"] { --c: var(--mid); --soft: var(--mid-soft); --vline: var(--mid-line); }
+.result[data-level="low"] { --c: var(--low); --soft: var(--low-soft); --vline: var(--low-line); }
+.verdict { padding: 22px 22px 20px; display: flex; gap: 14px; align-items: flex-start; background: var(--soft); border-bottom: 1px solid var(--vline); }
+.v-icon { width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--vline); color: var(--c); display: grid; place-items: center; flex: none; }
+.v-icon svg { width: 22px; height: 22px; }
+.verdict h2 { font-size: 21px; color: var(--c); }
+.verdict p { color: var(--ink-2); margin-top: 2px; }
+.part { padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; }
+.part + .part { border-top: 1px solid var(--line); }
+.part h3 { font-size: 14px; color: var(--muted); }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.list li { display: flex; gap: 10px; align-items: flex-start; color: var(--ink); }
+.list li .icon { margin-top: 3px; }
+.why .icon { color: var(--c); }
+.todo .icon { color: var(--accent); }
+.list li.none { color: var(--muted); }
 
-.block { display: flex; flex-direction: column; gap: 10px; }
-.block-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.count { font-size: 12.5px; color: var(--faint); }
-.findings { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
-.findings li { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; padding: 11px 14px; font-size: 14px; color: var(--ink-2); align-items: start; }
-.findings li + li { border-top: 1px solid var(--line); }
-.findings li.empty { grid-template-columns: 1fr; color: var(--muted); }
-.sev { font: 500 11.5px var(--sans); padding: 2px 8px; border-radius: 5px; text-align: center; border: 1px solid var(--bl); background: var(--bs); color: var(--c); margin-top: 1px; }
-.steps-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
-.steps-list li { display: flex; gap: 10px; font-size: 14px; color: var(--ink-2); }
-.steps-list .icon { color: var(--accent); margin-top: 3px; }
-.message { border: 1px solid var(--line); background: var(--subtle); border-radius: var(--r); padding: 12px 14px; font-size: 14px; color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
-mark { background: var(--hl); color: inherit; border-bottom: 1.5px solid var(--hl-line); padding: 0 1px; border-radius: 2px 2px 0 0; }
-.fine { font-size: 12.5px; color: var(--faint); }
-details.norm summary { cursor: pointer; font-size: 13px; color: var(--muted); list-style: none; display: inline-flex; gap: 6px; align-items: center; }
-details.norm summary::-webkit-details-marker { display: none; }
-details.norm summary::before { content: "+"; font-family: var(--mono); color: var(--faint); }
-details.norm[open] summary::before { content: "–"; }
-.normalized { margin-top: 10px; font: 13px/1.7 var(--mono); color: var(--ink-2); background: var(--subtle); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; overflow-wrap: anywhere; }
-.normalized b { font-weight: 500; color: var(--accent); }
-.spin { width: 13px; height: 13px; border: 1.5px solid currentColor; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin .7s linear infinite; }
+details { border-top: 1px solid var(--line); }
+details > summary { list-style: none; cursor: pointer; padding: 14px 22px; font-size: 14px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after { content: "+"; font-size: 18px; line-height: 1; color: var(--muted); }
+details[open] > summary::after { content: "\2013"; }
+.details-body { padding: 0 22px 18px; display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: var(--ink-2); }
+.score-row { display: flex; align-items: center; gap: 12px; }
+.meter { flex: 1; height: 6px; background: var(--subtle); border-radius: 3px; overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: var(--c); border-radius: 3px; transition: width .3s; }
+.msg { background: var(--subtle); border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 2px; }
+.fine { font-size: 13px; color: var(--muted); }
+
+/* Learn more */
+.more { margin-top: 32px; display: flex; flex-direction: column; gap: 10px; }
+.more details { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.more details > summary { padding: 16px 20px; font-size: 16px; font-weight: 500; color: var(--ink); }
+.more .details-body { padding: 0 20px 18px; font-size: 15px; }
+.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.note { background: var(--subtle); border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+
+footer { padding-block: 32px 40px; text-align: center; font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.spin { width: 15px; height: 15px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* Lower sections */
-.section { padding-top: 56px; display: flex; flex-direction: column; gap: 18px; }
-.section-head { display: flex; flex-direction: column; gap: 6px; max-width: 680px; }
-.section-head h2 { font-size: 21px; }
-.section-head p { color: var(--muted); }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
-.checklist { padding: 6px 0; }
-.check { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; padding: 14px 20px; cursor: pointer; align-items: start; }
-.check + .check { border-top: 1px solid var(--line); }
-.check input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: var(--accent); }
-.check b { font-weight: 500; font-size: 14.5px; display: block; }
-.check span { font-size: 13.5px; color: var(--muted); }
-.check:has(input:checked) b { color: var(--low); }
-.check-foot { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-top: 1px solid var(--line); background: var(--subtle); border-radius: 0 0 14px 14px; flex-wrap: wrap; }
-.bar { flex: 1; min-width: 140px; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
-.bar i { display: block; height: 100%; width: 0; background: var(--low); transition: width .25s; }
-.check-foot p { font-size: 13.5px; color: var(--ink-2); }
-
-.method { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
-@media (max-width: 900px) { .method { grid-template-columns: 1fr; } }
-.pipeline { padding: 8px 0; }
-.pipe { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 14px; padding: 14px 20px; }
-.pipe + .pipe { border-top: 1px solid var(--line); }
-.pipe .n { width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--line); background: var(--subtle); display: grid; place-items: center; font: 500 12px var(--mono); color: var(--muted); }
-.pipe h3 { font-size: 14.5px; font-weight: 500; }
-.pipe p { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
-.eval { display: flex; flex-direction: column; }
-.tablewrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-th { text-align: left; font-weight: 500; font-size: 12px; color: var(--muted); padding: 12px 20px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-td { padding: 11px 20px; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: top; }
-td.r, th.r { text-align: right; }
-tr:last-child td { border-bottom: 0; }
-.limits { margin: 0 20px 20px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r); background: var(--subtle); display: flex; gap: 12px; }
-.limits .icon { color: var(--muted); margin-top: 2px; }
-.limits p { font-size: 13.5px; color: var(--ink-2); }
-.limits p + p { margin-top: 6px; }
-
-footer { margin-top: 64px; border-top: 1px solid var(--line); }
-footer .container { padding-block: 20px 28px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
-@media (prefers-reduced-motion: reduce) { .gauge .arc, .bar i { transition: none; } .spin { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } .meter i { transition: none; } }
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-shield" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 3 5 6v5.5c0 4.4 3 8.2 7 9.5 4-1.3 7-5.1 7-9.5V6l-7-3Z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 6 9 17l-5-5"/></symbol>
-  <symbol id="i-lock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 11h12v10H6zM9 11V7a3 3 0 0 1 6 0v4"/></symbol>
-  <symbol id="i-info" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0ZM12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
 </svg>
 
-<header class="topbar">
-  <div class="container">
-    <a class="brand" href="#check">
-      <span class="brand-mark"><svg><use href="#i-shield"/></svg></span>
-      MoMo Scam Check <span class="tag">Research preview</span>
-    </a>
-    <nav aria-label="Sections">
-      <a href="#check">Analyse</a>
-      <a href="#before">Checklist</a>
-      <a href="#method">Methodology</a>
-      <span class="status" id="status"><i></i><span id="statusText">Model ready</span></span>
-    </nav>
-  </div>
-</header>
+<div class="wrap">
+  <header><span class="brand"><svg><use href="#i-shield"/></svg>MoMo Scam Check</span></header>
 
-<main class="container">
-  <section class="intro">
-    <div class="intro-text">
-      <p class="label">Mobile Money SMS screening</p>
-      <h1>Check a message before you act on it.</h1>
-      <p>Paste an SMS about money. The analysis shows how risky it is, which scam patterns it contains, and what to do next.</p>
-    </div>
-    <div class="metrics" aria-label="Evaluation summary">
-      <div class="metric"><b class="num">93%</b><span>real MoMo scams caught</span></div>
-      <div class="metric"><b class="num">15</b><span>red-flag checks</span></div>
-      <div class="metric"><b class="num">0</b><span>messages stored</span></div>
-    </div>
+  <section class="hero">
+    <h1>Is this message a scam?</h1>
+    <p>Paste a Mobile Money SMS below and we'll tell you.</p>
   </section>
 
-  <section class="console" id="check" aria-label="Message analysis">
-    <div class="pane"><div class="stick">
-      <div class="pane-head"><h2>Message</h2><span class="count num" id="counter">0 / 2,000</span></div>
-      <div class="field">
-        <label for="sender">Sender <span>Optional · as shown on your phone</span></label>
-        <input id="sender" type="text" maxlength="40" autocomplete="off" spellcheck="false" placeholder="MobileMoney, or a number such as 024 412 3456">
-      </div>
-      <div class="field">
-        <label for="sms">SMS text</label>
-        <textarea id="sms" maxlength="2000" spellcheck="false" placeholder="Paste the message here"></textarea>
-      </div>
-      <div class="actions">
-        <button class="btn btn-primary" id="checkBtn" type="button">Analyse message</button>
-        <button class="btn" id="clearBtn" type="button">Clear</button>
-        <span class="hint">Ctrl ↵</span>
-      </div>
-      <div class="samples">
-        <p class="label">Sample messages</p>
-        <div class="sample-list" id="examples" role="group" aria-label="Sample messages"></div>
-      </div>
-      <p class="privacy"><svg class="icon"><use href="#i-lock"/></svg><span>Analysis runs on this computer. Messages are not uploaded or saved.</span></p>
-    </div></div>
-
-    <div class="pane" aria-live="polite">
-      <div class="pane-head"><h2>Analysis</h2><span class="count" id="checkedAt"></span></div>
-      <div class="summary" id="summary" data-level="idle">
-        <div class="gauge" aria-hidden="true">
-          <svg viewBox="0 0 84 84"><circle class="track" cx="42" cy="42" r="36" fill="none" stroke-width="6"/><circle class="arc" id="arc" cx="42" cy="42" r="36" fill="none" stroke-width="6" stroke-dasharray="226.2" stroke-dashoffset="226.2"/></svg>
-          <div class="gauge-val"><div><b class="num" id="score">–</b><span>risk</span></div></div>
-        </div>
-        <div class="verdict-line">
-          <span class="badge" id="badge"><i></i><span id="badgeText">Awaiting message</span></span>
-          <h3 id="headline">Paste a message to analyse it</h3>
-          <p id="subline">Or choose one of the sample messages.</p>
-        </div>
-      </div>
-
-      <div class="block">
-        <div class="block-head"><p class="label">Findings</p><span class="count" id="findCount"></span></div>
-        <ul class="findings" id="findings"></ul>
-      </div>
-      <div class="block">
-        <p class="label">Recommended actions</p>
-        <ul class="steps-list" id="advice"></ul>
-      </div>
-      <div class="block">
-        <p class="label">Message</p>
-        <div class="message" id="bubble"></div>
-        <p class="fine">Underlined wording raised the model's score. It explains the score; it is not proof of fraud.</p>
-        <details class="norm"><summary>Show normalised text</summary><p class="normalized" id="scrubbed"></p></details>
-      </div>
+  <section class="box" aria-label="Check a message">
+    <label for="sms" class="sr-only">SMS text</label>
+    <textarea id="sms" maxlength="2000" spellcheck="false" placeholder="Paste the message here…"></textarea>
+    <button class="sender-toggle" id="senderToggle" type="button" aria-expanded="false" aria-controls="senderBox">+ Add who sent it (optional)</button>
+    <div class="sender" id="senderBox" hidden>
+      <label for="sender">Sender, as shown on your phone</label>
+      <input id="sender" type="text" maxlength="40" autocomplete="off" spellcheck="false" placeholder="e.g. MobileMoney or 0244 123 456">
+      <small>This helps catch fake "money received" alerts sent from ordinary phone numbers.</small>
     </div>
+    <button class="btn" id="checkBtn" type="button">Check message</button>
   </section>
 
-  <section class="section" id="before" aria-labelledby="beforeH">
-    <div class="section-head">
-      <p class="label">Pre-transfer checklist</p>
-      <h2 id="beforeH">Asked to return money sent "by mistake"?</h2>
-      <p>Confirm all four before sending anything. A forged "money received" alert can look exactly like a real one.</p>
+  <div class="examples" id="examples"><span>Try an example:</span></div>
+
+  <section class="result" id="result" data-level="low" aria-live="polite" hidden>
+    <div class="verdict">
+      <div class="v-icon" id="vIcon"></div>
+      <div><h2 id="headline"></h2><p id="subline"></p></div>
     </div>
-    <div class="card checklist">
-      <label class="check" for="c1"><input type="checkbox" id="c1"><div><b>The money is in your real balance</b><span>Checked on the official MoMo menu or app, not in the SMS or a screenshot.</span></div></label>
-      <label class="check" for="c2"><input type="checkbox" id="c2"><div><b>The alert came from the official sender</b><span>Genuine alerts come from the provider's sender name, never an ordinary phone number.</span></div></label>
-      <label class="check" for="c3"><input type="checkbox" id="c3"><div><b>No pressure and no new number</b><span>Nobody is rushing or threatening you, or asking you to pay a different number.</span></div></label>
-      <label class="check" for="c4"><input type="checkbox" id="c4"><div><b>No PIN, OTP or approval codes</b><span>You have not been asked for your PIN or an OTP, or to dial a code and approve a prompt.</span></div></label>
-      <div class="check-foot">
-        <div class="bar" aria-hidden="true"><i id="ckBar"></i></div>
-        <span class="count num" id="ckCount">0 of 4</span>
-        <p id="ckResult">Do not send money until all four are confirmed.</p>
+    <div class="part" id="whyPart">
+      <h3>Why</h3>
+      <ul class="list why" id="why"></ul>
+    </div>
+    <div class="part" id="todoPart">
+      <h3>What to do</h3>
+      <ul class="list todo" id="todo"></ul>
+    </div>
+    <details id="detailsPart">
+      <summary>See details</summary>
+      <div class="details-body">
+        <div class="score-row"><span>Risk score</span><div class="meter"><i id="meter"></i></div><b id="score"></b></div>
+        <div class="msg" id="msg"></div>
+        <p class="fine">Highlighted words made the score go up. They explain the score; they are not proof of a scam.</p>
       </div>
-    </div>
+    </details>
   </section>
 
-  <section class="section" id="method" aria-labelledby="methodH">
-    <div class="section-head">
-      <p class="label">Methodology</p>
-      <h2 id="methodH">How the analysis works</h2>
-    </div>
-    <div class="method">
-      <div class="card pipeline">
-        <div class="pipe"><span class="n">1</span><div><h3>Normalise</h3><p>Phone numbers, amounts, names and transaction IDs are replaced with labels, so the analysis looks at how a message is written rather than who it mentions.</p></div></div>
-        <div class="pipe"><span class="n">2</span><div><h3>Rule checks</h3><p>Fifteen checks for known scam signs: "sent by mistake", requests to return money, account threats, PIN and OTP requests, prize fees, spelling and grammar errors, and official-looking alerts from personal numbers.</p></div></div>
-        <div class="pipe"><span class="n">3</span><div><h3>Model score</h3><p>A text classifier trained on public SMS datasets and synthetic Ghana-style messages scores the wording. The risk shown is the higher of the model score and the rule score.</p></div></div>
+  <section class="more">
+    <details>
+      <summary>Someone says they sent you money by mistake?</summary>
+      <div class="details-body">
+        <ol class="steps">
+          <li>Check your real balance on the official MoMo menu or app. Don't trust the SMS or a screenshot.</li>
+          <li>Look at who sent the alert. Real alerts come from the provider's name, never a normal phone number.</li>
+          <li>Don't send money to a different number, and don't let anyone rush you.</li>
+          <li>Never share your PIN or a code, and never dial a code someone gives you.</li>
+        </ol>
+        <p class="note">If the money really arrived, ask your provider to reverse it. Don't send it back yourself.</p>
       </div>
-      <div class="card eval">
-        <div class="tablewrap">
-          <table>
-            <thead><tr><th>Evaluation set</th><th class="r">Scams caught</th><th class="r">False alarms</th></tr></thead>
-            <tbody>
-              <tr><td>Held-out English SMS</td><td class="r num">96%</td><td class="r num">0.5%</td></tr>
-              <tr><td>Real mobile-money SMS, Mozambique (unseen)</td><td class="r num">93%</td><td class="r num">28%</td></tr>
-              <tr><td>Ghana challenge set (40 messages)</td><td class="r num">60%</td><td class="r num">15%</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="limits">
-          <svg class="icon"><use href="#i-info"/></svg>
-          <div>
-            <p><b>Limitations.</b> A forged alert can match a real one word for word; only the sender differs, so enter the sender when you can. A low score does not mean a message is safe.</p>
-            <p>This is a research prototype. It has not been evaluated on real Ghanaian scam messages.</p>
-          </div>
-        </div>
+    </details>
+    <details>
+      <summary>How does this work?</summary>
+      <div class="details-body">
+        <p>The checker looks for common scam signs, like "sent by mistake", requests for your PIN, threats to block your account and spelling mistakes. A computer model trained on thousands of text messages also scores the wording.</p>
+        <p>In testing on real Mobile Money scam messages it caught 93 out of 100. It also wrongly warned about some genuine messages, and it can miss scams.</p>
+        <p class="note">Everything runs on this computer. Your message is not uploaded or saved. A "no scam signs" result does not guarantee a message is safe.</p>
       </div>
-    </div>
+    </details>
   </section>
-</main>
 
-<footer>
-  <div class="container">
-    <span>MoMo Scam Check · Research preview</span>
-    <span>Report suspected fraud to your provider. MTN: forward the SMS to 1515.</span>
-  </div>
-</footer>
+  <footer>
+    <span>To report fraud on MTN, forward the message to 1515.</span>
+    <span>MoMo Scam Check is a research prototype.</span>
+  </footer>
+</div>
 
 <script>
 (function () {
   "use strict";
   const ALERT = "Payment received for GHS 120.00 from AKUA DARKO Current Balance: GHS 340.55. Reference: lunch. Transaction ID: 51234098765. TRANSACTION FEE: 0.00";
-  // [label, expected, sender, text]
+  // [label, sender, text]
   const EXAMPLES = [
-    ["Mistaken transfer", "high", "0244 123 456", "You has recieved GHS 500 by mistake. Please send it back to 0244123456 immediately or your account will be blocked."],
-    ["Forged alert", "high", "0551 234 567", ALERT],
-    ["Prize fee", "high", "", "Congratulations! Your number has won GHS 5,000 in the MoMo anniversary promo. Pay GHS 50 processing fee to 0551234567 to receive your prize."],
-    ["PIN request", "high", "", "Dear costumer to receive your bonus of GHS 300 dial *170# and enter your PIN to confirm."],
-    ["Account threat", "high", "", "Your MoMo account has been blocked due to a wrong transaction. Call 0598765432 now to unblock."],
-    ["Genuine alert", "low", "MobileMoney", ALERT],
-    ["Personal message", "low", "", "Did you receive the GHS 80? Network was bad so I'm not sure it went"],
+    ["Money sent by mistake", "", "You has recieved GHS 500 by mistake. Please send it back to 0244123456 immediately or your account will be blocked."],
+    ["Fake prize", "", "Congratulations! Your number has won GHS 5,000 in the MoMo anniversary promo. Pay GHS 50 processing fee to 0551234567 to receive your prize."],
+    ["Fake alert", "0551 234 567", ALERT],
+    ["Real alert", "MobileMoney", ALERT],
   ];
-  const LEVEL = {
-    high: ["High risk", "Likely scam", "This message matches known Mobile Money scam patterns. Do not act on it."],
-    medium: ["Medium risk", "Suspicious", "Some warning signs. Verify through official channels before you act."],
-    low: ["Low risk", "No common scam pattern found", "This does not prove the message is safe. Check your balance before sending money."],
+  // Plain-language versions of each red flag.
+  const PLAIN = {
+    mistaken_transfer: "Says money was sent to you by mistake",
+    send_back: "Asks you to send money back",
+    pin_otp_request: "Asks for your PIN or a code",
+    dial_code: "Tells you to dial a code",
+    account_threat: "Threatens to block your account",
+    verify_account: "Asks you to “verify” your account",
+    urgency: "Rushes you to act now",
+    prize_reward: "Says you won a prize",
+    fee_to_receive: "Asks you to pay a fee to get money",
+    link: "Contains a link",
+    call_number: "Asks you to call a number",
+    impersonation: "Claims to be from MTN, Telecel or an agent",
+    spelling: "Has spelling or grammar mistakes",
+    alert_from_phone: "Looks like an official alert, but came from a normal phone number",
+    provider_from_phone: "Claims to be official, but came from a normal phone number",
   };
-  const SEV = { high: "High", medium: "Medium", low: "Low" };
-  const CIRC = 226.2;
+  // Short, plain next steps for each red flag (first two distinct ones are shown).
+  const DO = {
+    alert_from_phone: "Ignore this alert. Check your real balance on the official MoMo menu.",
+    mistaken_transfer: "Check your balance on the official MoMo menu (*170# on MTN). If the money isn't there, it never arrived.",
+    send_back: "Don't send money back. A real mistake is fixed by your provider, not by you.",
+    pin_otp_request: "Never share your PIN or any code, with anyone.",
+    dial_code: "Don't dial codes or approve prompts that someone else gives you.",
+    prize_reward: "Real prizes never ask you to pay a fee first.",
+    fee_to_receive: "Real prizes never ask you to pay a fee first.",
+    account_threat: "Call your provider yourself, using the number on their official website.",
+    verify_account: "Call your provider yourself, using the number on their official website.",
+    impersonation: "Call your provider yourself, using the number on their official website.",
+    provider_from_phone: "Call your provider yourself, using the number on their official website.",
+    link: "Don't open the link.",
+    call_number: "Don't call the number in the message.",
+  };
+  const DO_DEFAULT = {
+    high: "Don't reply, and don't send any money.",
+    medium: "Check with your provider through its official channels before you act.",
+    low: "Check your balance on the official MoMo menu before you send any money.",
+  };
+  const VERDICT = {
+    high: ["i-alert", "This looks like a scam", "Don't send money, share your PIN, or call the number in the message."],
+    medium: ["i-alert", "Be careful", "This message has some signs of a scam. Check with your provider before you do anything."],
+    low: ["i-ok", "No scam signs found", "Still, check your balance on the official MoMo menu before you send any money."],
+  };
   const $ = (id) => document.getElementById(id);
-  const sms = $("sms"), senderBox = $("sender");
-  let timer = null, seq = 0;
-
+  const sms = $("sms"), sender = $("sender");
+  let seq = 0;
   const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const tick = `<svg class="icon"><use href="#i-check"/></svg>`;
+  const ico = (id) => `<svg class="icon"><use href="#${id}"/></svg>`;
 
-  EXAMPLES.forEach(([name, kind, sender, text], i) => {
+  function showSender(open) {
+    $("senderBox").hidden = !open;
+    $("senderToggle").hidden = open;
+    $("senderToggle").setAttribute("aria-expanded", String(open));
+  }
+  $("senderToggle").addEventListener("click", () => { showSender(true); sender.focus(); });
+
+  EXAMPLES.forEach(([name, from, text]) => {
     const b = document.createElement("button");
-    b.type = "button"; b.className = "chip"; b.id = "ex" + i;
-    b.innerHTML = `<i style="background:var(--${kind === "high" ? "high" : "low"})"></i>${esc(name)}`;
-    b.setAttribute("aria-pressed", "false");
-    b.addEventListener("click", () => { sms.value = text; senderBox.value = sender; markChip(i); updateCounter(); run(); });
+    b.type = "button"; b.className = "chip"; b.textContent = name;
+    b.addEventListener("click", () => { sms.value = text; sender.value = from; showSender(!!from); run(); });
     $("examples").appendChild(b);
   });
-  function markChip(i) { document.querySelectorAll(".chip").forEach((c, j) => c.setAttribute("aria-pressed", String(j === i))); }
-  function updateCounter() { $("counter").textContent = sms.value.length.toLocaleString() + " / 2,000"; }
-
-  function setSummary(level, badge, headline, sub, risk) {
-    $("summary").dataset.level = level;
-    $("badgeText").textContent = badge;
-    $("headline").textContent = headline;
-    $("subline").textContent = sub;
-    $("score").textContent = risk == null ? "–" : Math.round(risk * 100);
-    $("arc").style.strokeDashoffset = String(CIRC * (1 - (risk || 0)));
-  }
-
-  function idle() {
-    setSummary("idle", "Awaiting message", "Paste a message to analyse it", "Or choose one of the sample messages.", null);
-    $("findings").innerHTML = `<li class="empty">Findings will be listed here.</li>`;
-    $("findCount").textContent = "";
-    $("advice").innerHTML = `<li style="color:var(--muted)">Recommended actions will appear here.</li>`;
-    $("bubble").textContent = "No message yet.";
-    $("scrubbed").textContent = "";
-    $("checkedAt").textContent = "";
-  }
 
   function highlight(text, words) {
     const html = esc(text);
@@ -411,72 +278,71 @@ footer .container { padding-block: 20px 28px; display: flex; justify-content: sp
     return html.replace(pat, "<mark>$1</mark>");
   }
 
-  function render(r, text) {
-    const [badge, headline, sub] = LEVEL[r.level];
-    setSummary(r.level, badge, headline, sub, r.risk);
-    const f = r.findings || [];
-    $("findCount").textContent = f.length ? f.length + (f.length === 1 ? " finding" : " findings") : "";
-    $("findings").innerHTML = f.length
-      ? f.map((x) => `<li data-level="${x.severity}"><span class="sev">${SEV[x.severity]}</span><span>${esc(x.reason)}</span></li>`).join("")
-      : r.level === "low"
-        ? `<li class="empty">No red-flag checks matched.</li>`
-        : `<li class="empty">No single check matched, but the wording resembles scam messages the model was trained on.</li>`;
-    $("advice").innerHTML = r.advice.map((x) => `<li>${tick}<span>${esc(x)}</span></li>`).join("");
-    // On a low score the few positive words are noise; highlighting them would mislead.
-    $("bubble").innerHTML = highlight(text, r.level === "low" ? [] : r.influential_words);
-    $("scrubbed").innerHTML = esc(r.scrubbed_text).replace(/&lt;(PHONE|AMOUNT|NAME|TXID|URL|EMAIL|DATE|TIME|NUM)&gt;/g, "<b>&lt;$1&gt;</b>");
-    $("checkedAt").textContent = "Analysed " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  function setParts(visible) {
+    ["whyPart", "todoPart", "detailsPart"].forEach((id) => { $(id).hidden = !visible; });
   }
 
-  function setOnline(ok) {
-    $("status").classList.toggle("off", !ok);
-    $("statusText").textContent = ok ? "Model ready" : "Server offline";
+  function render(r, text) {
+    const [icon, headline, sub] = VERDICT[r.level];
+    const box = $("result");
+    box.hidden = false;
+    box.dataset.level = r.level;
+    setParts(true);
+    $("vIcon").innerHTML = `<svg><use href="#${icon}"/></svg>`;
+    $("headline").textContent = headline;
+    $("subline").textContent = sub;
+    const reasons = (r.findings || []).map((f) => PLAIN[f.name] || f.reason).slice(0, 5);
+    $("why").innerHTML = reasons.length
+      ? reasons.map((x) => `<li>${ico("i-dot")}<span>${esc(x)}</span></li>`).join("")
+      : r.level === "low"
+        ? `<li class="none">We didn't find any of the usual scam signs.</li>`
+        : `<li>${ico("i-dot")}<span>The wording is similar to scam messages we have seen before.</span></li>`;
+    const steps = [...new Set((r.findings || []).map((f) => DO[f.name]).filter(Boolean))].slice(0, 2);
+    if (!steps.length) steps.push(DO_DEFAULT[r.level]);
+    $("todo").innerHTML = steps.map((x) => `<li>${ico("i-arrow")}<span>${esc(x)}</span></li>`).join("");
+    const pct = Math.round(r.risk * 100);
+    $("score").textContent = pct + " / 100";
+    $("meter").style.width = pct + "%";
+    // On a low score the few positive words are noise; highlighting them would mislead.
+    $("msg").innerHTML = highlight(text, r.level === "low" ? [] : r.influential_words);
+  }
+
+  function showNotice(title, sub) {
+    const box = $("result");
+    box.hidden = false;
+    box.dataset.level = "medium";
+    setParts(false);
+    $("vIcon").innerHTML = `<svg><use href="#i-alert"/></svg>`;
+    $("headline").textContent = title;
+    $("subline").textContent = sub;
   }
 
   async function run() {
     const text = sms.value.trim();
-    if (!text) { idle(); return; }
+    if (!text) { showNotice("Paste a message first", "Copy the SMS from your phone and paste it in the box above."); sms.focus(); return; }
     const mine = ++seq;
-    $("checkBtn").innerHTML = `<span class="spin" aria-hidden="true"></span>Analysing`;
+    $("checkBtn").innerHTML = `<span class="spin" aria-hidden="true"></span>Checking…`;
     try {
       const res = await fetch("/api/predict", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, sender: senderBox.value.trim() || null }),
+        body: JSON.stringify({ text, sender: sender.value.trim() || null }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const r = await res.json();
-      if (mine === seq) { render(r, text); setOnline(true); }
+      if (mine === seq) render(r, text);
     } catch (e) {
-      if (mine === seq) {
-        setOnline(false);
-        setSummary("medium", "Unavailable", "The analysis server is not responding", "Start it with python run_site.py, then try again.", null);
-      }
+      if (mine === seq) showNotice("The checker isn't running", "Start it with python run_site.py, then try again.");
     } finally {
-      if (mine === seq) $("checkBtn").textContent = "Analyse message";
+      if (mine === seq) $("checkBtn").textContent = "Check message";
     }
   }
 
-  const later = () => { markChip(-1); clearTimeout(timer); timer = setTimeout(run, 300); };
-  sms.addEventListener("input", () => { updateCounter(); later(); });
-  senderBox.addEventListener("input", later);
-  sms.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); } });
   $("checkBtn").addEventListener("click", run);
-  $("clearBtn").addEventListener("click", () => { sms.value = ""; senderBox.value = ""; markChip(-1); updateCounter(); idle(); sms.focus(); });
+  sms.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); } });
 
-  const boxes = ["c1", "c2", "c3", "c4"].map($);
-  boxes.forEach((b) => b.addEventListener("change", () => {
-    const n = boxes.filter((x) => x.checked).length;
-    $("ckBar").style.width = (n / 4 * 100) + "%";
-    $("ckCount").textContent = n + " of 4";
-    $("ckResult").textContent = n === 4
-      ? "All confirmed. If the money really arrived, ask your provider to reverse it rather than sending it back yourself."
-      : "Do not send money until all four are confirmed.";
-  }));
-
-  idle();
-  sms.value = EXAMPLES[0][3];
-  senderBox.value = EXAMPLES[0][2];
-  markChip(0); updateCounter(); run();
+  // Open with a worked example so the page shows what it does.
+  sms.value = EXAMPLES[0][2];
+  run();
 })();
 </script>
 </body>
