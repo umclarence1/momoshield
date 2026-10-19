@@ -48,17 +48,35 @@ bank priced in Nigerian naira, labelled "Swahili").
   threats, urgency, prize, fee-to-receive, link, call-this-number, verify-account, impersonation,
   USSD dial instruction).
 - **TF-IDF + logistic regression:** word 1–2-grams plus character 3–5-grams, class-balanced.
-- **DistilBERT** (`distilbert-base-uncased`) and **multilingual DistilBERT**
-  (`distilbert-base-multilingual-cased`): fine-tuned for 2 epochs, lr 5e-5, class-weighted loss,
-  on the same splits. The multilingual model is also tested on the **original Portuguese** MOZ
-  messages, with no translation step.
+- **DistilBERT** (`distilbert-base-uncased`): fine-tuned for 2 epochs, lr 5e-5, batch 32,
+  max length 96, class-weighted loss, on the same splits, on CPU.
+
+A third model, multilingual DistilBERT on the original Portuguese, was planned but could not
+be completed: on the 16 GB machine used, with other jobs running, training crashed for lack of
+memory three times (also with the embedding layer frozen). It can be run later with
+`python src/train_transformer.py --model distilbert-base-multilingual-cased --tag mdistilbert --freeze-embeddings`
+and `summarize.py` will add it to the table.
 
 All models use a threshold of 0.5 (rules: score ≥ 2). 95% confidence intervals come from 1,000
 bootstrap resamples of each test set.
 
 ## 4. Results
 
-RESULTS_TABLE
+Main results (threshold 0.5; 95% bootstrap CIs in brackets; full table in `reports/results.md`).
+
+| Test set | Model (training data) | Recall | FPR | Precision | PR-AUC |
+|---|---|---|---|---|---|
+| English held-out (1,295; 227 scams) | Rules only | 0.29 | 0.008 | 0.88 | 0.48 |
+| | TF-IDF LR (real) | 0.95 | 0.008 | 0.96 | 0.99 |
+| | TF-IDF LR (real + synth + spelling) | 0.96 | 0.005 | 0.98 | 0.99 |
+| | DistilBERT (real + synth) | 0.98 | 0.006 | 0.97 | 0.99 |
+| **MOZ test, real MoMo** (1,139; 273 scams) | Rules only | 0.01 | 0.014 | 0.14 | 0.23 |
+| | TF-IDF LR (real) | 0.71 [0.66–0.77] | 0.39 [0.35–0.42] | 0.37 | 0.28 |
+| | TF-IDF LR (real + synth) | 0.93 [0.90–0.96] | 0.29 [0.26–0.32] | 0.50 | 0.46 |
+| | TF-IDF LR (real + synth + spelling) | 0.93 [0.90–0.96] | 0.28 [0.26–0.31] | 0.51 | 0.50 |
+| | **DistilBERT (real + synth)** | **0.95 [0.92–0.97]** | **0.22 [0.19–0.25]** | **0.58** | **0.62** |
+| Ghana challenge (40; 20 scams) | TF-IDF LR (real + synth + spelling) | 0.60 [0.36–0.81] | 0.15 | 0.80 | 0.84 |
+| | DistilBERT (real + synth) | 0.75 [0.55–0.92] | 0.15 | 0.83 | 0.89 |
 
 ### Findings
 
@@ -67,14 +85,20 @@ RESULTS_TABLE
    0.71 recall and flags 39% of genuine messages.
 2. **Synthetic local data helps.** Adding the synthetic Ghana messages raised TF-IDF recall on real
    MOZ scams from 0.71 to 0.93 and cut false alarms from 39% to 29%. (See the disclosure in §6.)
-3. **Bigger models.** TRANSFORMER_FINDING
+3. **DistilBERT beats the baseline where it matters.** On English data every model is near the
+   ceiling, so the comparison there says nothing. On real mobile-money SMS, DistilBERT catches
+   slightly more scams (0.95 vs 0.93, overlapping CIs) and, more importantly, raises fewer false
+   alarms (22% vs 28%; the CIs barely touch) with clearly better ranking (PR-AUC 0.62 vs 0.50). On
+   the small Ghana challenge set its recall is 0.75 vs 0.60, but with 20 scams the CIs overlap
+   widely. The website still uses TF-IDF LR: it runs instantly on any laptop, its red-flag
+   explanations line up with its features, and the gap is modest.
 4. **A text-only model cannot detect forged alerts.** A fake "Cash In received" alert reads exactly
    like a real one; only the *sender* differs (a personal number instead of the official ID). Most
    of the remaining false alarms on MOZ are genuine bank and M-Pesa transaction alerts, and some
    missed scams are forged "MoMo Confirmed ... balance blocked" alerts. Both the challenge-set
    forged alerts scored below 0.35. **A deployable tool must use the sender ID**, and none of the
    public datasets include it.
-5. **Rules are a poor classifier but a good explainer.** Rules alone catch at most 20% of scams.
+5. **Rules are a poor classifier but a good explainer.** Rules alone catch at most 29% of scams.
    But when a rule fires, its reason ("asks for your PIN") is literally true about the message. So
    the demo uses the model for the risk score and the rules for the explanation.
 6. **Spelling mistakes are a weak signal in the available data.** A common belief is that scam

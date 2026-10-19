@@ -73,7 +73,7 @@ python src/ghana_challenge.py
 python src/prepare_data.py
 python src/train_eval.py             # baselines -> reports/preds, models/
 python src/train_transformer.py --model distilbert-base-uncased --tag distilbert
-python src/train_transformer.py --model distilbert-base-multilingual-cased --tag mdistilbert
+python src/train_transformer.py --model distilbert-base-multilingual-cased --tag mdistilbert --freeze-embeddings  # optional; needs ~3 GB free RAM
 python src/summarize.py              # -> reports/results.md (with 95% CIs)
 python src/threshold.py              # -> reports/threshold_analysis.md
 pytest tests
@@ -90,12 +90,16 @@ Full table with confidence intervals: `reports/results.md`. Write-up: `reports/R
 | **MOZ real MoMo (test half)** | TF-IDF LR, real only | 0.71 | 0.39 |
 | **MOZ real MoMo (test half)** | TF-IDF LR, real + synth | 0.93 | 0.29 |
 | **MOZ real MoMo (test half)** | TF-IDF LR, real + synth + spelling | 0.93 | 0.28 |
+| **MOZ real MoMo (test half)** | **DistilBERT, real + synth** | **0.95** | **0.22** |
 | Ghana challenge (40, constructed) | TF-IDF LR, real + synth + spelling | 0.60 | 0.15 |
+| Ghana challenge (40, constructed) | DistilBERT, real + synth | 0.75 | 0.15 |
 
 What this shows:
 - Near-perfect scores on English data say little. On real mobile-money SMS from another country,
   recall drops to 0.71 and almost 4 in 10 genuine messages get flagged.
 - Adding synthetic Ghana data raises recall on real MoMo scams from 0.71 to 0.93 and lowers false alarms.
+- DistilBERT does better still on real MoMo SMS (false alarms 22% vs 28%, PR-AUC 0.62 vs 0.50). The
+  website keeps TF-IDF LR because it is instant on any laptop and its explanations match its features.
 - The remaining false alarms are mostly **genuine transaction alerts**. A forged cash-in alert
   has the same text as a real one; only the sender differs. Text alone cannot separate them,
   so a deployable tool needs the sender ID.

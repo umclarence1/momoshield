@@ -50,6 +50,8 @@ def main():
     ap.add_argument("--bs", type=int, default=32)
     ap.add_argument("--max-len", type=int, default=96)
     ap.add_argument("--save", action="store_true", help="save the fine-tuned model to models/<tag>")
+    ap.add_argument("--freeze-embeddings", action="store_true",
+                    help="do not train the word-embedding matrix (saves memory on large-vocabulary models)")
     args = ap.parse_args()
 
     torch.manual_seed(0)
@@ -60,10 +62,14 @@ def main():
 
     tok = AutoTokenizer.from_pretrained(args.model)
     model = AutoModelForSequenceClassification.from_pretrained(args.model, num_labels=2)
+    if args.freeze_embeddings:
+        emb = model.get_input_embeddings()
+        emb.weight.requires_grad_(False)
+        print(f"froze word embeddings ({emb.weight.numel():,} params)", flush=True)
     # Class-weighted loss, the transformer analogue of class_weight="balanced" in the baseline.
     w = torch.tensor(len(labels) / (2 * np.bincount(labels, minlength=2)), dtype=torch.float)
     loss_fn = torch.nn.CrossEntropyLoss(weight=w)
-    opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.01)
+    opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=args.lr, weight_decay=0.01)
     steps = args.epochs * int(np.ceil(len(texts) / args.bs))
     sched = get_linear_schedule_with_warmup(opt, int(0.06 * steps), steps)
 
