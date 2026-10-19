@@ -47,6 +47,9 @@ class Predictor:
             "level": level,
             "model_probability": round(p, 3),
             "reasons": [h.reason for h in hits],
+            "findings": [{"name": h.name, "reason": h.reason,
+                          "severity": "high" if h.weight >= 2 else "medium" if h.weight >= 1.5 else "low"}
+                         for h in sorted(hits, key=lambda h: -h.weight)],
             "advice": list(dict.fromkeys(advice))[:3],
             "influential_words": [w for w, c in self.model.top_words(clean, k=15)
                                   if c > 0 and len(w) > 2 and not set(w.split()) & PLACEHOLDER_WORDS][:6],
